@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useReducer, useState } from "react"
 import * as React from "react"
 import { useCompiledTsx } from "../use-compiled-tsx"
 import { Circuit } from "@tscircuit/core"
@@ -17,13 +17,24 @@ type RunTsxResult = {
   isLoading: boolean
 }
 
-export const useRunTsx = (
-  code?: string,
-  type?: "board" | "footprint" | "package" | "model",
-  { isStreaming = false }: { isStreaming?: boolean } = {},
-): RunTsxResult => {
+export const useRunTsx = ({
+  code,
+  type,
+  isStreaming = false,
+}: {
+  code?: string
+  type?: "board" | "footprint" | "package" | "model"
+  isStreaming?: boolean
+} = {}): RunTsxResult & {
+  triggerRunTsx: () => void
+  tsxRunTriggerCount: number
+} => {
   type ??= "board"
   const compiledJs = useCompiledTsx(code, { isStreaming })
+  const [tsxRunTriggerCount, incTsxRunTriggerCount] = useReducer(
+    (c) => c + 1,
+    0,
+  )
   const [tsxResult, setTsxResult] = useState<RunTsxResult>({
     compiledModule: null,
     message: "",
@@ -33,6 +44,7 @@ export const useRunTsx = (
   const apiBaseUrl = useSnippetsBaseApiUrl()
 
   useEffect(() => {
+    if (tsxRunTriggerCount === 0) return
     async function run() {
       if (isStreaming || !compiledJs || !code) {
         setTsxResult({
@@ -61,11 +73,9 @@ export const useRunTsx = (
         ).then((res) => res.json())
 
         try {
-          console.log("importedSnippet", importedSnippet)
-          // eval the imported snippet compiled_js
           preSuppliedImports[importName] = evalCompiledJs(
             importedSnippet.compiled_js,
-          )
+          ).default.exports
         } catch (e) {
           console.error("Error importing snippet", e)
         }
@@ -127,7 +137,11 @@ export const useRunTsx = (
       }
     }
     run()
-  }, [compiledJs, isStreaming])
+  }, [tsxRunTriggerCount, compiledJs, isStreaming])
 
-  return tsxResult
+  return {
+    ...tsxResult,
+    triggerRunTsx: incTsxRunTriggerCount,
+    tsxRunTriggerCount,
+  }
 }

@@ -12,7 +12,7 @@ export const ErrorTabContent = ({
 }: {
   code?: string
   isStreaming?: boolean
-  errorMessage?: string
+  errorMessage?: string | null
 }) => {
   const anthropic = useAiApi()
   const simplifiedErrorMessage = useAsyncMemo(async () => {

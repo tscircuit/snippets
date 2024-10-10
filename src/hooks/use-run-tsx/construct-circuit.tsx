@@ -4,7 +4,6 @@ import * as React from "react"
 import { useCompiledTsx } from "../use-compiled-tsx"
 import { createJSCADRenderer } from "jscad-fiber"
 import { jscadPlanner } from "jscad-planner"
-import { getImportsFromCode } from "@tscircuit/prompt-benchmarks/code-runner-utils"
 
 export const constructCircuit = (
   UserElm: any,

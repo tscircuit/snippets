@@ -15,11 +15,12 @@ import { useAxios } from "@/hooks/use-axios"
 import { TypeBadge } from "./TypeBadge"
 import { useToast } from "@/hooks/use-toast"
 import { useMutation, useQueryClient } from "react-query"
-import { ClipboardIcon, Share, Eye, EyeOff } from "lucide-react"
+import { ClipboardIcon, Share, Eye, EyeOff, PlayIcon } from "lucide-react"
 import { MagicWandIcon } from "@radix-ui/react-icons"
 import { ErrorBoundary } from "react-error-boundary"
 import { ErrorTabContent } from "./ErrorTabContent"
 import { cn } from "@/lib/utils"
+import { PreviewContent } from "./PreviewContent"
 
 interface Props {
   snippet?: Snippet | null
@@ -41,10 +42,16 @@ export function CodeAndPreview({ snippet }: Props) {
   }, [snippet?.code])
   const { toast } = useToast()
 
-  const { message, circuitJson, compiledJs } = useRunTsx(
+  const {
+    message,
+    circuitJson,
+    compiledJs,
+    triggerRunTsx,
+    tsxRunTriggerCount,
+  } = useRunTsx({
     code,
-    snippet?.snippet_type,
-  )
+    type: snippet?.snippet_type,
+  })
   const qc = useQueryClient()
 
   const updateSnippetMutation = useMutation({
@@ -113,43 +120,14 @@ export function CodeAndPreview({ snippet }: Props) {
           />
         </div>
         {showPreview && (
-          <div className="w-full md:w-1/2 p-2 min-h-[640px]">
-            <Tabs defaultValue="pcb">
-              <TabsList>
-                <TabsTrigger value="pcb">PCB</TabsTrigger>
-                <TabsTrigger value="cad">3D</TabsTrigger>
-                <TabsTrigger value="table">JSON</TabsTrigger>
-                <TabsTrigger value="error">
-                  Errors
-                  {message && (
-                    <span className="inline-flex items-center justify-center w-5 h-5 ml-2 text-xs font-bold text-white bg-red-500 rounded-full">
-                      1
-                    </span>
-                  )}
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="pcb">
-                <div className="mt-4 h-[500px]">
-                  <PCBViewer soup={circuitJson} />
-                </div>
-              </TabsContent>
-              <TabsContent value="cad">
-                <div className="mt-4 h-[500px]">
-                  <ErrorBoundary fallback={<div>Error loading 3D viewer</div>}>
-                    <CadViewer soup={circuitJson as any} />
-                  </ErrorBoundary>
-                </div>
-              </TabsContent>
-              <TabsContent value="table">
-                <div className="mt-4 h-[500px]">
-                  <CircuitJsonTableViewer elements={circuitJson as any} />
-                </div>
-              </TabsContent>
-              <TabsContent value="error">
-                <ErrorTabContent code={code} errorMessage={message} />
-              </TabsContent>
-            </Tabs>
-          </div>
+          <PreviewContent
+            code={code}
+            triggerRunTsx={triggerRunTsx}
+            hasUnsavedChanges={hasUnsavedChanges}
+            tsxRunTriggerCount={tsxRunTriggerCount}
+            errorMessage={message}
+            circuitJson={circuitJson}
+          />
         )}
       </div>
     </div>
