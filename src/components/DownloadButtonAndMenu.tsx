@@ -1,4 +1,3 @@
-import React from "react"
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -7,8 +6,22 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { Download, ChevronDown } from "lucide-react"
+import { saveAs } from "file-saver"
+import { createBlobURL } from "@/lib/createBlobURL"
 
-export function DownloadButtonAndMenu({ className }: { className?: string }) {
+export function DownloadButtonAndMenu({
+  className,
+  circuitJson,
+  fileName,
+}: {
+  className?: string
+  circuitJson?: string
+  fileName?: string
+}) {
+  const handleDownloadClick = () => {
+    const blob = createBlobURL(circuitJson as string)
+    saveAs(blob, `${fileName}.json`)
+  }
   return (
     <div className={className}>
       <DropdownMenu>
@@ -20,14 +33,7 @@ export function DownloadButtonAndMenu({ className }: { className?: string }) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          <DropdownMenuItem className="text-xs">
-            <Download className="mr-1 h-3 w-3" />
-            <span className="flex-grow mr-6">Download TSX</span>
-            <span className="text-[0.6rem] opacity-80 bg-blue-500 text-white font-mono rounded-md px-1 text-center py-0.5 mr-1">
-              tsx
-            </span>
-          </DropdownMenuItem>
-          <DropdownMenuItem className="text-xs">
+          <DropdownMenuItem className="text-xs" onClick={handleDownloadClick}>
             <Download className="mr-1 h-3 w-3" />
             <span className="flex-grow mr-6">Download Circuit JSON</span>
             <span className="text-[0.6rem] opacity-80 bg-blue-500 text-white font-mono rounded-md px-1 text-center py-0.5 mr-1">
