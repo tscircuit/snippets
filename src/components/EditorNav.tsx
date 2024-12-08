@@ -170,8 +170,11 @@ export default function EditorNav({
           <Button
             variant="outline"
             size="sm"
-            className={"h-6 px-2 text-xs save-button"}
-            disabled={!isLoggedIn || !canSave}
+            className={cn(
+              "h-6 px-2 text-xs save-button",
+              (!canSave || isSaving) && "opacity-50 cursor-not-allowed",
+            )}
+            disabled={!isLoggedIn || !canSave || isSaving}
             onClick={onSave}
           >
             <Save className="mr-1 h-3 w-3" />
@@ -202,7 +205,7 @@ export default function EditorNav({
               Saving...
             </div>
           )}
-          {hasUnsavedChanges && !isSaving && isLoggedIn && (
+          {hasUnsavedChanges && !isSaving && (
             <div className="animate-fadeIn bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded">
               {snippet ? "unsaved changes" : "unsaved"}
             </div>
