@@ -44,11 +44,13 @@ import { useRenameSnippetDialog } from "./dialogs/rename-snippet-dialog"
 import { DownloadButtonAndMenu } from "./DownloadButtonAndMenu"
 import { SnippetLink } from "./SnippetLink"
 import { TypeBadge } from "./TypeBadge"
-
+import { useSignIn } from "@/hooks/use-sign-in"
+type CodeSnippetType = "board" | "package" | "model" | "footprint"
 export default function EditorNav({
   circuitJson,
   snippet,
   code,
+  manual_edits_json_content,
   hasUnsavedChanges,
   onTogglePreview,
   previewOpen,
@@ -60,7 +62,8 @@ export default function EditorNav({
   snippet?: Snippet | null
   circuitJson?: AnyCircuitElement[] | null
   code: string
-  snippetType?: string
+  snippetType?: "board" | "package" | "model" | "footprint"
+  manual_edits_json_content: string | null
   hasUnsavedChanges: boolean
   previewOpen: boolean
   onTogglePreview: () => void
@@ -70,6 +73,8 @@ export default function EditorNav({
 }) {
   const [, navigate] = useLocation()
   const isLoggedIn = useGlobalStore((s) => Boolean(s.session))
+  const setGuestSnippet = useGlobalStore((s) => s.setGuestSnippet)
+  const guestSnippet = useGlobalStore((s) => s.guestSnippet)
   const { Dialog: RenameDialog, openDialog: openRenameDialog } =
     useRenameSnippetDialog()
   const { Dialog: DeleteDialog, openDialog: openDeleteDialog } =
@@ -87,13 +92,29 @@ export default function EditorNav({
   const axios = useAxios()
   const { toast } = useToast()
   const qc = useQueryClient()
+  const signIn = useSignIn()
 
+  const handleEditorLogin = () => {
+    if (!isLoggedIn && !guestSnippet) {
+      const guestSnippet = {
+        code,
+        circuitJson,
+        snippetType: snippetType as CodeSnippetType,
+        manual_edits_json_content,
+      }
+      setGuestSnippet(guestSnippet)
+      signIn()
+      setGuestSnippet(null)
+    }
+  }
   // Update currentType when snippet or snippetType changes
   useEffect(() => {
     setCurrentType(snippetType ?? snippet?.snippet_type)
   }, [snippetType, snippet?.snippet_type])
 
-  const handleTypeChange = async (newType: string) => {
+  const handleTypeChange = async (
+    newType: "board" | "package" | "model" | "footprint",
+  ) => {
     if (!snippet || newType === currentType) return
 
     try {
@@ -163,9 +184,13 @@ export default function EditorNav({
         </div>
         <div className="flex items-center space-x-1">
           {!isLoggedIn && (
-            <div className="bg-orange-100 text-orange-700 py-1 px-2 text-xs opacity-70">
-              Not logged in, can't save
-            </div>
+            <button
+              className="bg-orange-100 text-orange-700 py-1 px-2 text-xs opacity-70"
+              title="Login to save your changes"
+              onClick={() => handleEditorLogin()}
+            >
+              Login to Save
+            </button>
           )}
           <Button
             variant="outline"
