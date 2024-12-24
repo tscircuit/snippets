@@ -17,6 +17,7 @@ import StaticPreviewContent from "../components/StaticPreviewContent"
 import StaticViewSnippetSidebar from "../components/StaticViewSnippetSidebar"
 import { useEffect, useMemo, useState } from "react"
 import { parseJsonOrNull } from "@/lib/utils/parseJsonOrNull"
+import { CircuitJsonPreview } from "@tscircuit/runframe/preview"
 
 export const ViewSnippetPage = () => {
   const { author, snippetName } = useParams()
@@ -93,11 +94,9 @@ export const ViewSnippetPage = () => {
             <ViewSnippetHeader />
             <div className="flex flex-row min-h-full">
               <div className="flex-grow overflow-auto">
-                <PreviewContent
+                <CircuitJsonPreview
                   className="h-full"
                   code={snippet?.code ?? ""}
-                  triggerRunTsx={triggerRunTsx}
-                  tsxRunTriggerCount={tsxRunTriggerCount}
                   errorMessage={message}
                   circuitJson={circuitJsonForPreview}
                   circuitJsonKey={circuitJsonKeyForPreview}
