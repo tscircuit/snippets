@@ -23,6 +23,7 @@ interface Props {
 }
 
 export function CodeAndPreview({ snippet }: Props) {
+  console.log("snippet", snippet)
   const axios = useAxios()
   const isLoggedIn = useGlobalStore((s) => Boolean(s.session))
   const urlParams = useUrlParams()
@@ -91,6 +92,7 @@ export function CodeAndPreview({ snippet }: Props) {
     userImports,
     type: snippetType,
     circuitDisplayName: snippet?.name,
+    manualEditsFileContent,
   })
 
   // Update lastRunCode whenever the code is run
