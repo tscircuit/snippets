@@ -23,7 +23,6 @@ interface Props {
 }
 
 export function CodeAndPreview({ snippet }: Props) {
-  console.log("snippet", snippet)
   const axios = useAxios()
   const isLoggedIn = useGlobalStore((s) => Boolean(s.session))
   const urlParams = useUrlParams()
