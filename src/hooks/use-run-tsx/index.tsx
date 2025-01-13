@@ -25,12 +25,14 @@ export const useRunTsx = ({
   type,
   isStreaming = false,
   circuitDisplayName,
+  manualEditsFileContent,
 }: {
   code?: string
   userImports?: Record<string, object>
   type?: "board" | "footprint" | "package" | "model"
   isStreaming?: boolean
   circuitDisplayName?: string
+  manualEditsFileContent?: string | null
 } = {}): RunTsxResult & {
   circuitJsonKey: string
   triggerRunTsx: () => void
@@ -156,7 +158,11 @@ export const useRunTsx = ({
         await addImport(userCodeTsciImport)
       }
 
-      const { success, compiledTsx: compiledJs, error } = safeCompileTsx(code!)
+      const {
+        success,
+        compiledTsx: compiledJs,
+        error,
+      } = safeCompileTsx(code!, manualEditsFileContent)
 
       if (!success) {
         setTsxResult({

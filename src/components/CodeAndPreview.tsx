@@ -91,6 +91,7 @@ export function CodeAndPreview({ snippet }: Props) {
     userImports,
     type: snippetType,
     circuitDisplayName: snippet?.name,
+    manualEditsFileContent,
   })
 
   // Update lastRunCode whenever the code is run
