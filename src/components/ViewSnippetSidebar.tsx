@@ -2,9 +2,12 @@ import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard"
 import { useCurrentSnippet } from "@/hooks/use-current-snippet"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
-import { AtSign, Bot, Clock, Code, File, GitFork, Package } from "lucide-react"
+import { AtSign, Bot, Clock, Code, File, GitFork, Link2, Package } from "lucide-react"
 import { Link } from "wouter"
 import { useFilesDialog } from "./dialogs/files-dialog"
+import { useEditDatasheetUrlDialog } from "./dialogs/edit-datasheet-url-dialog"
+import { Button } from "./ui/button"
+import { useState } from "react"
 
 export default function ViewSnippetSidebar({
   className,
@@ -14,7 +17,9 @@ export default function ViewSnippetSidebar({
   const { snippet } = useCurrentSnippet()
   const { toast } = useToast()
   const { Dialog: FilesDialog, openDialog: openFilesDialog } = useFilesDialog()
+  const { Dialog: DatasheetUrlDialog, openDialog: openDatasheetUrlDialog } = useEditDatasheetUrlDialog()
   const { copyToClipboard } = useCopyToClipboard()
+  const [datasheetUrlDialogProps, setDatasheetUrlDialogProps] = useState<{ snippetId: string; currentUrl: string | null } | null>(null)
 
   return (
     <div
@@ -38,10 +43,48 @@ export default function ViewSnippetSidebar({
               badge: "AI",
               href: `/ai?snippet_id=${snippet?.snippet_id}`,
             },
-            // {
-            //   icon: <GitHubLogoIcon className="w-5 h-5" />,
-            //   label: "Github",
-            // },
+            {
+              icon: <Link2 className="w-5 h-5" />,
+              label: "Datasheet",
+              content: snippet?.datasheet_url ? (
+                <div className="flex items-center gap-2 mt-2">
+                  <a
+                    href={snippet.datasheet_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 hover:underline text-sm truncate max-w-[150px]"
+                  >
+                    View Datasheet
+                  </a>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      if (snippet) {
+                        setDatasheetUrlDialogProps({ snippetId: snippet.snippet_id, currentUrl: snippet.datasheet_url ?? null })
+                        openDatasheetUrlDialog()
+                      }
+                    }}
+                  >
+                    Edit
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    if (snippet) {
+                      setDatasheetUrlDialogProps({ snippetId: snippet.snippet_id, currentUrl: null })
+                      openDatasheetUrlDialog()
+                    }
+                  }}
+                >
+                  Add Datasheet URL
+                </Button>
+              ),
+              badge: snippet?.datasheet_url ? "URL" : undefined,
+            },
             {
               icon: <GitFork className="w-5 h-5" />,
               label: "Forks",
@@ -71,7 +114,6 @@ export default function ViewSnippetSidebar({
                 }
               },
             },
-            // { icon: <Settings className="w-5 h-5" />, label: "Settings" },
           ].map((item, index) => (
             <li key={index}>
               <Link
@@ -157,6 +199,7 @@ export default function ViewSnippetSidebar({
         </div>
       </div>
       {snippet && <FilesDialog snippetId={snippet.snippet_id} />}
+      {snippet && datasheetUrlDialogProps && <DatasheetUrlDialog {...datasheetUrlDialogProps} />}
     </div>
   )
 }
